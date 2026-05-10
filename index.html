@@ -18,6 +18,8 @@
     .marker-canvas.tr { top: 0; right: 0; }
     .marker-canvas.bl { bottom: 0; left: 0; }
     .marker-canvas.br { bottom: 0; right: 0; }
+    .marker-canvas.tm { top: 0; left: 50%; transform: translateX(-50%); }
+    .marker-canvas.bm { bottom: 0; left: 50%; transform: translateX(-50%); }
     #debug { font-size: 13px; color: #aaa; text-align: center; }
     #conn-status { font-size: 13px; color: #888; }
     #version { position: fixed; bottom: 8px; right: 12px; font-size: 11px; color: #444; font-family: monospace; }
@@ -40,11 +42,13 @@
     <canvas id="marker-tr" class="marker-canvas tr"></canvas>
     <canvas id="marker-bl" class="marker-canvas bl"></canvas>
     <canvas id="marker-br" class="marker-canvas br"></canvas>
+    <canvas id="marker-tm" class="marker-canvas tm"></canvas>
+    <canvas id="marker-bm" class="marker-canvas bm"></canvas>
     <div id="debug">Waiting for detections…</div>
     <div id="conn-status2">Connected</div>
   </div>
 
-  <div id="version">four-corners</div>
+  <div id="version">six-markers</div>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -59,6 +63,8 @@
           { id: 1, canvasId: 'marker-tr' },
           { id: 2, canvasId: 'marker-bl' },
           { id: 3, canvasId: 'marker-br' },
+          { id: 4, canvasId: 'marker-tm' },
+          { id: 5, canvasId: 'marker-bm' },
         ];
         for (const { id, canvasId } of corners) {
           const mat = new cv.Mat();
