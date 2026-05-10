@@ -10,22 +10,24 @@
     #qr-view { display: flex; flex-direction: column; align-items: center; gap: 16px; }
     #qr-view p { margin: 0; font-size: 14px; color: #aaa; }
 
-    #marker-view { display: none; flex-direction: column; align-items: center; gap: 24px; }
-    #marker-view.active { display: flex; }
+    #scene-view { display: none; position: fixed; inset: 0; }
+    #scene-view.active { display: block; }
 
-    .marker-canvas { image-rendering: pixelated; padding: 20px; background: white; position: fixed; }
+    .marker-canvas { image-rendering: pixelated; padding: 20px; background: white; position: fixed; z-index: 10; }
     .marker-canvas.tl { top: 0; left: 0; }
     .marker-canvas.tr { top: 0; right: 0; }
     .marker-canvas.bl { bottom: 0; left: 0; }
     .marker-canvas.br { bottom: 0; right: 0; }
     .marker-canvas.tm { top: 0; left: 50%; transform: translateX(-50%); }
     .marker-canvas.bm { bottom: 0; left: 50%; transform: translateX(-50%); }
-    #debug { font-size: 13px; color: #aaa; text-align: center; }
+
+    #debug { position: fixed; bottom: 40px; left: 0; right: 0; text-align: center; font-size: 13px; color: #aaa; z-index: 10; pointer-events: none; }
     #conn-status { font-size: 13px; color: #888; }
-    #version { position: fixed; bottom: 8px; right: 12px; font-size: 11px; color: #444; font-family: monospace; }
+    #version { position: fixed; bottom: 8px; right: 12px; font-size: 11px; color: #444; font-family: monospace; z-index: 10; }
     #copy-btn { margin-top: 4px; padding: 6px 14px; background: #333; color: #eee; border: 1px solid #555; border-radius: 4px; font-family: monospace; cursor: pointer; }
     #copy-btn:hover { background: #444; }
     #copy-btn.copied { color: #4f4; border-color: #4f4; }
+    #kbd-hint { position: fixed; top: 8px; left: 12px; font-size: 11px; color: #444; z-index: 10; pointer-events: none; }
   </style>
 </head>
 <body>
@@ -37,7 +39,7 @@
     <div id="conn-status">Waiting for connection…</div>
   </div>
 
-  <div id="marker-view">
+  <div id="scene-view">
     <canvas id="marker-tl" class="marker-canvas tl"></canvas>
     <canvas id="marker-tr" class="marker-canvas tr"></canvas>
     <canvas id="marker-bl" class="marker-canvas bl"></canvas>
@@ -45,20 +47,50 @@
     <canvas id="marker-tm" class="marker-canvas tm"></canvas>
     <canvas id="marker-bm" class="marker-canvas bm"></canvas>
     <div id="debug">Waiting for detections…</div>
-    <div id="conn-status2">Connected</div>
+    <div id="kbd-hint">WASD / QE — move head (keyboard mode)</div>
   </div>
 
-  <div id="version">solvepnp</div>
+  <div id="version">threejs-scene</div>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
   <script src="js/aruco.js"></script>
+  <script src="js/scene.js"></script>
   <script src="js/peer-host.js"></script>
   <script>
+    const { renderer, camera, scene } = initScene(document.getElementById('scene-view'));
+
+    // Head position — driven by keyboard or phone
+    const head = { x: 0, y: 0, z: 6 };
+    const MARKER_PX = 150;
+
+    function render() {
+      updateCamera(camera, head, window.innerWidth, window.innerHeight, MARKER_PX);
+      renderer.render(scene, camera);
+      requestAnimationFrame(render);
+    }
+    render();
+
+    // Keyboard controls (WASD = x/z, QE = y)
+    const keys = {};
+    window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+    window.addEventListener('keyup',   e => keys[e.key.toLowerCase()] = false);
+    const SPEED = 0.05;
+    setInterval(() => {
+      if (keys['a']) head.x -= SPEED;
+      if (keys['d']) head.x += SPEED;
+      if (keys['w']) head.z += SPEED;
+      if (keys['s']) head.z -= SPEED;
+      if (keys['q']) head.y += SPEED;
+      if (keys['e']) head.y -= SPEED;
+    }, 16);
+
+    // Generate markers via OpenCV
     loadOpenCV(() => {
       try {
         const dict = cv.getPredefinedDictionary(cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0);
-        const corners = [
+        const markers = [
           { id: 0, canvasId: 'marker-tl' },
           { id: 1, canvasId: 'marker-tr' },
           { id: 2, canvasId: 'marker-bl' },
@@ -66,13 +98,12 @@
           { id: 4, canvasId: 'marker-tm' },
           { id: 5, canvasId: 'marker-bm' },
         ];
-        for (const { id, canvasId } of corners) {
+        for (const { id, canvasId } of markers) {
           const mat = new cv.Mat();
           cv.generateImageMarker(dict, id, 150, mat, 1);
           cv.imshow(canvasId, mat);
           mat.delete();
         }
-        console.log('Markers generated via OpenCV');
       } catch(e) {
         console.warn('OpenCV marker generation failed:', e.message);
       }
