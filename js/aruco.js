@@ -13,12 +13,7 @@ function loadOpenCV(onReady, onStatus) {
         const dictId = cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0;
         const dict = cv.getPredefinedDictionary(dictId);
 
-        // Tuned for screen display: lower adaptive threshold, looser corner accuracy
         const params = new cv.aruco_DetectorParameters();
-        params.adaptiveThreshConstant = 3;
-        params.minMarkerPerimeterRate = 0.02;
-        params.polygonalApproxAccuracyRate = 0.08;
-        params.cornerRefinementMethod = 1; // CORNER_REFINE_SUBPIX
 
         const refine = new cv.aruco_RefineParameters(10, 3, true);
         detector = new cv.aruco_ArucoDetector(dict, params, refine);
