@@ -1,0 +1,24 @@
+{
+  "name": "head-tracking-window",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quasarbright/head-tracking-window.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/quasarbright/head-tracking-window/issues"
+  },
+  "homepage": "https://github.com/quasarbright/head-tracking-window#readme",
+  "description": "",
+  "dependencies": {
+    "@techstark/opencv-js": "^4.12.0-release.1",
+    "canvas": "^3.2.3"
+  }
+}
