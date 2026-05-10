@@ -10,9 +10,20 @@ drawArucoMarker(markerCanvas, 300);
 const peer = new Peer();
 
 peer.on('open', id => {
-  const phoneUrl = `https://quasarbright.github.io/head-tracking-window/camera.html?peer=${id}`;
+  const base = window.location.origin + window.location.pathname.replace('index.html', '');
+  const phoneUrl = `${base}camera.html?peer=${id}`;
   new QRCode(document.getElementById('qr'), { text: phoneUrl, width: 200, height: 200 });
   connStatus.textContent = `Peer ID: ${id}`;
+
+  const copyBtn = document.getElementById('copy-btn');
+  copyBtn.style.display = 'block';
+  copyBtn.onclick = () => {
+    navigator.clipboard.writeText(phoneUrl).then(() => {
+      copyBtn.textContent = 'Copied!';
+      copyBtn.classList.add('copied');
+      setTimeout(() => { copyBtn.textContent = 'Copy link'; copyBtn.classList.remove('copied'); }, 2000);
+    });
+  };
 });
 
 peer.on('connection', conn => {

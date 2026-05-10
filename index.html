@@ -16,6 +16,9 @@
     #marker-canvas { image-rendering: pixelated; }
     #debug { font-size: 13px; color: #aaa; text-align: center; }
     #conn-status { font-size: 13px; color: #888; }
+    #copy-btn { margin-top: 4px; padding: 6px 14px; background: #333; color: #eee; border: 1px solid #555; border-radius: 4px; font-family: monospace; cursor: pointer; }
+    #copy-btn:hover { background: #444; }
+    #copy-btn.copied { color: #4f4; border-color: #4f4; }
   </style>
 </head>
 <body>
@@ -23,6 +26,7 @@
   <div id="qr-view">
     <p>Scan with phone to connect</p>
     <div id="qr"></div>
+    <button id="copy-btn" style="display:none">Copy link</button>
     <div id="conn-status">Waiting for connection…</div>
   </div>
 
