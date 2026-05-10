@@ -29,11 +29,14 @@ peer.on('connection', conn => {
   qrView.style.display = 'none';
   markerView.classList.add('active');
 
+  conn.on('open', () => {
+    conn.send({ type: 'config', screenW: window.innerWidth, screenH: window.innerHeight });
+  });
+
   conn.on('data', data => {
-    if (data.type === 'detection' && data.markers.length > 0) {
-      debug.textContent = data.markers
-        .map(({ id, corners }) => `ID ${id}: ${corners.map(([x, y]) => `(${x.toFixed(0)},${y.toFixed(0)})`).join(' ')}`)
-        .join('\n');
+    if (data.type === 'pose') {
+      const { x, y, z } = data;
+      debug.textContent = `x: ${x.toFixed(2)}  y: ${y.toFixed(2)}  z: ${z.toFixed(2)}`;
     }
   });
 

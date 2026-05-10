@@ -36,22 +36,26 @@ document.addEventListener('touchend', e => {
 
 function startAruco() {
   loadOpenCV(() => {
-    setStatus('Searching for marker…');
+    setStatus('Searching for markers…');
     const params = new URLSearchParams(window.location.search);
     const hostId = params.get('peer');
-    const conn = hostId ? connectPeer(hostId) : null;
+    let screenConfig = null;
+    const conn = hostId ? connectPeer(hostId, cfg => { screenConfig = cfg; }) : null;
     if (!hostId) setLog('No peer ID — running detection only');
-    startLoop(conn);
+    startLoop(conn, () => screenConfig);
   }, setStatus);
 }
 
-function connectPeer(hostId) {
+function connectPeer(hostId, onConfig) {
   const peer = new Peer();
   let conn = null;
 
   peer.on('open', () => {
     conn = peer.connect(hostId);
     conn.on('open', () => setLog('Connected to PC'));
+    conn.on('data', data => {
+      if (data.type === 'config') onConfig(data);
+    });
     conn.on('close', () => setLog('Disconnected'));
     conn.on('error', err => setLog(`Conn error: ${err.message}`));
   });
@@ -60,7 +64,7 @@ function connectPeer(hostId) {
   return { send: data => conn && conn.open && conn.send(data) };
 }
 
-function startLoop(conn) {
+function startLoop(conn, getConfig) {
   let frameCount = 0;
   let lastDetections = [];
   let lastDetectTime = 0;
@@ -98,8 +102,14 @@ function startLoop(conn) {
 
     if (detections.length > 0) {
       setStatus(`Detected: ${detections.map(d => `ID ${d.id}`).join(', ')}`);
-      setLog('');
-      conn && conn.send({ type: 'detection', markers: detections });
+      const cfg = getConfig && getConfig();
+      if (cfg) {
+        const pose = estimateHeadPosition(detections, video.videoWidth, video.videoHeight, cfg.screenW, cfg.screenH);
+        if (pose) {
+          dbg('pose', `x:${pose.x.toFixed(2)} y:${pose.y.toFixed(2)} z:${pose.z.toFixed(2)}`);
+          conn && conn.send({ type: 'pose', ...pose });
+        }
+      }
     } else {
       setStatus('Searching for markers…');
     }
