@@ -14,12 +14,25 @@ function dbg(key, val) {
   debugEl.textContent = Object.values(debugLines).join('\n');
 }
 
+let videoTrack = null;
+
 navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false })
   .then(stream => {
     video.srcObject = stream;
+    videoTrack = stream.getVideoTracks()[0];
     video.onloadedmetadata = () => startAruco();
   })
   .catch(err => setStatus(`Camera error: ${err.message}`));
+
+// Tap to focus
+document.addEventListener('touchend', e => {
+  if (!videoTrack) return;
+  const touch = e.changedTouches[0];
+  const x = touch.clientX / window.innerWidth;
+  const y = touch.clientY / window.innerHeight;
+  videoTrack.applyConstraints({ advanced: [{ focusMode: 'manual', pointsOfInterest: [{ x, y }] }] })
+    .catch(() => {}); // silently ignore if unsupported
+});
 
 function startAruco() {
   loadOpenCV(() => {
