@@ -22,9 +22,9 @@
     .marker-canvas.bm { bottom: 0; left: 50%; transform: translateX(-50%); }
 
     #debug { position: fixed; bottom: 40px; left: 0; right: 0; text-align: center; font-size: 13px; color: #aaa; z-index: 10; pointer-events: none; }
-    #skybox-manifest-bar { position: fixed; top: 12px; right: 12px; z-index: 10; display: none; }
-    #skybox-manifest-bar.active { display: block; }
-    #skybox-manifest-select { background: rgba(0,0,0,0.6); color: #eee; border: 1px solid #555; border-radius: 4px; padding: 4px 8px; font-family: monospace; font-size: 12px; cursor: pointer; }
+    #skybox-bar { position: fixed; top: 12px; right: 12px; z-index: 10; display: none; }
+    #skybox-bar.active { display: block; }
+    #skybox-select { background: rgba(0,0,0,0.6); color: #eee; border: 1px solid #555; border-radius: 4px; padding: 4px 8px; font-family: monospace; font-size: 12px; cursor: pointer; }
     #conn-status { font-size: 13px; color: #888; }
     #version { position: fixed; bottom: 8px; right: 12px; font-size: 11px; color: #444; font-family: monospace; z-index: 10; }
     #copy-btn { margin-top: 4px; padding: 6px 14px; background: #333; color: #eee; border: 1px solid #555; border-radius: 4px; font-family: monospace; cursor: pointer; }
@@ -51,8 +51,8 @@
     <div id="debug"></div>
   </div>
 
-  <div id="skybox-manifest-bar">
-    <select id="skybox-manifest-select"></select>
+  <div id="skybox-bar">
+    <select id="skybox-select"></select>
   </div>
 
   <div id="version">skybox-manifest</div>
