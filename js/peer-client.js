@@ -41,8 +41,17 @@ function connectPeer(hostId) {
 }
 
 function startLoop(conn) {
+  let frameCount = 0;
   function loop() {
-    const detections = detectMarkers(video, processingCanvas);
+    frameCount++;
+    let detections = [];
+    try {
+      detections = detectMarkers(video, processingCanvas);
+    } catch (e) {
+      console.error('detectMarkers error:', e);
+      setStatus(`Detection error: ${e.message}`);
+    }
+
     drawDetections(overlay, detections, video.videoWidth, video.videoHeight);
 
     if (detections.length > 0) {
@@ -52,6 +61,7 @@ function startLoop(conn) {
       conn && conn.send({ type: 'detection', markers: detections });
     } else {
       setStatus('Searching for marker…');
+      if (frameCount % 60 === 0) console.log(`Frame ${frameCount}, no detection. Video: ${video.videoWidth}x${video.videoHeight}`);
     }
 
     requestAnimationFrame(loop);

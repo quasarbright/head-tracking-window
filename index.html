@@ -40,5 +40,20 @@
   <script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="js/aruco.js"></script>
   <script src="js/peer-host.js"></script>
+  <script>
+    // Generate marker via OpenCV once it loads, replacing the hardcoded canvas
+    loadOpenCV(() => {
+      try {
+        const markerMat = new cv.Mat();
+        const dict = cv.getPredefinedDictionary(cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0);
+        cv.aruco_generateImageMarker(dict, 0, 300, markerMat, 1);
+        cv.imshow('marker-canvas', markerMat);
+        markerMat.delete();
+        console.log('Marker generated via OpenCV');
+      } catch(e) {
+        console.warn('OpenCV marker generation failed, using hardcoded fallback:', e.message);
+      }
+    }, msg => console.log('PC OpenCV:', msg));
+  </script>
 </body>
 </html>

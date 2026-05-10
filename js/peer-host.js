@@ -10,15 +10,18 @@ drawArucoMarker(markerCanvas, 300);
 const peer = new Peer();
 
 peer.on('open', id => {
-  const base = window.location.origin + window.location.pathname.replace('index.html', '');
+  const localBase = window.location.origin + window.location.pathname.replace(/index\.html$/, '');
+  const prodBase = 'https://quasarbright.github.io/head-tracking-window/';
+  const base = window.location.hostname === 'localhost' ? prodBase : localBase;
   const phoneUrl = `${base}camera.html?peer=${id}`;
   new QRCode(document.getElementById('qr'), { text: phoneUrl, width: 200, height: 200 });
   connStatus.textContent = `Peer ID: ${id}`;
 
+  const localUrl = `${localBase}camera.html?peer=${id}`;
   const copyBtn = document.getElementById('copy-btn');
   copyBtn.style.display = 'block';
   copyBtn.onclick = () => {
-    navigator.clipboard.writeText(phoneUrl).then(() => {
+    navigator.clipboard.writeText(localUrl).then(() => {
       copyBtn.textContent = 'Copied!';
       copyBtn.classList.add('copied');
       setTimeout(() => { copyBtn.textContent = 'Copy link'; copyBtn.classList.remove('copied'); }, 2000);
