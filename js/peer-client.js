@@ -97,12 +97,11 @@ function startLoop(conn) {
     drawDetections(overlay, showDetections, video.videoWidth, video.videoHeight);
 
     if (detections.length > 0) {
-      const { id, corners } = detections[0];
-      setStatus(`Marker detected: ID ${id}`);
-      setLog(corners.map(([x, y]) => `(${x.toFixed(0)},${y.toFixed(0)})`).join('  '));
+      setStatus(`Detected: ${detections.map(d => `ID ${d.id}`).join(', ')}`);
+      setLog('');
       conn && conn.send({ type: 'detection', markers: detections });
     } else {
-      setStatus('Searching for marker…');
+      setStatus('Searching for markers…');
     }
 
     requestAnimationFrame(loop);

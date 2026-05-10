@@ -13,7 +13,11 @@
     #marker-view { display: none; flex-direction: column; align-items: center; gap: 24px; }
     #marker-view.active { display: flex; }
 
-    #marker-canvas { image-rendering: pixelated; padding: 20px; background: white; }
+    .marker-canvas { image-rendering: pixelated; padding: 20px; background: white; position: fixed; }
+    .marker-canvas.tl { top: 0; left: 0; }
+    .marker-canvas.tr { top: 0; right: 0; }
+    .marker-canvas.bl { bottom: 0; left: 0; }
+    .marker-canvas.br { bottom: 0; right: 0; }
     #debug { font-size: 13px; color: #aaa; text-align: center; }
     #conn-status { font-size: 13px; color: #888; }
     #version { position: fixed; bottom: 8px; right: 12px; font-size: 11px; color: #444; font-family: monospace; }
@@ -32,29 +36,39 @@
   </div>
 
   <div id="marker-view">
-    <canvas id="marker-canvas"></canvas>
+    <canvas id="marker-tl" class="marker-canvas tl"></canvas>
+    <canvas id="marker-tr" class="marker-canvas tr"></canvas>
+    <canvas id="marker-bl" class="marker-canvas bl"></canvas>
+    <canvas id="marker-br" class="marker-canvas br"></canvas>
     <div id="debug">Waiting for detections…</div>
     <div id="conn-status2">Connected</div>
   </div>
 
-  <div id="version">smaller-marker</div>
+  <div id="version">four-corners</div>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="js/aruco.js"></script>
   <script src="js/peer-host.js"></script>
   <script>
-    // Generate marker via OpenCV once it loads, replacing the hardcoded canvas
     loadOpenCV(() => {
       try {
-        const markerMat = new cv.Mat();
         const dict = cv.getPredefinedDictionary(cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0);
-        cv.generateImageMarker(dict, 0, 150, markerMat, 1);
-        cv.imshow('marker-canvas', markerMat);
-        markerMat.delete();
-        console.log('Marker generated via OpenCV');
+        const corners = [
+          { id: 0, canvasId: 'marker-tl' },
+          { id: 1, canvasId: 'marker-tr' },
+          { id: 2, canvasId: 'marker-bl' },
+          { id: 3, canvasId: 'marker-br' },
+        ];
+        for (const { id, canvasId } of corners) {
+          const mat = new cv.Mat();
+          cv.generateImageMarker(dict, id, 150, mat, 1);
+          cv.imshow(canvasId, mat);
+          mat.delete();
+        }
+        console.log('Markers generated via OpenCV');
       } catch(e) {
-        console.warn('OpenCV marker generation failed, using hardcoded fallback:', e.message);
+        console.warn('OpenCV marker generation failed:', e.message);
       }
     }, msg => console.log('PC OpenCV:', msg));
   </script>

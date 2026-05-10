@@ -3,10 +3,6 @@ const markerView = document.getElementById('marker-view');
 const connStatus = document.getElementById('conn-status');
 const debug = document.getElementById('debug');
 
-// Draw ArUco marker on the canvas (300px — large enough to detect at ~60cm)
-const markerCanvas = document.getElementById('marker-canvas');
-drawArucoMarker(markerCanvas, 500);
-
 const peer = new Peer();
 
 peer.on('open', id => {
@@ -35,8 +31,9 @@ peer.on('connection', conn => {
 
   conn.on('data', data => {
     if (data.type === 'detection' && data.markers.length > 0) {
-      const { id, corners } = data.markers[0];
-      debug.textContent = `ID ${id}  |  corners: ${corners.map(([x, y]) => `(${x.toFixed(0)},${y.toFixed(0)})`).join('  ')}`;
+      debug.textContent = data.markers
+        .map(({ id, corners }) => `ID ${id}: ${corners.map(([x, y]) => `(${x.toFixed(0)},${y.toFixed(0)})`).join(' ')}`)
+        .join('\n');
     }
   });
 
