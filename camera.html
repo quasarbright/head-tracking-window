@@ -5,14 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Head Tracker — Phone</title>
   <style>
-    body { margin: 0; background: #111; color: #eee; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 24px; box-sizing: border-box; }
-    #status { font-size: 16px; text-align: center; }
-    #log { margin-top: 16px; font-size: 13px; color: #aaa; text-align: center; }
+    body { margin: 0; background: #000; overflow: hidden; }
+    #video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+    #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    #status { position: fixed; bottom: 24px; left: 0; right: 0; text-align: center; color: #fff; font-family: monospace; font-size: 14px; text-shadow: 0 1px 4px #000; }
+    #log { position: fixed; bottom: 44px; left: 0; right: 0; text-align: center; color: #aaa; font-family: monospace; font-size: 13px; text-shadow: 0 1px 4px #000; }
   </style>
 </head>
 <body>
-  <div id="status">Connecting…</div>
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="overlay"></canvas>
   <div id="log"></div>
+  <div id="status">Starting camera…</div>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="js/peer-client.js"></script>

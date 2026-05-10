@@ -1,12 +1,26 @@
 const status = document.getElementById('status');
 const log = document.getElementById('log');
+const video = document.getElementById('video');
 
-const params = new URLSearchParams(window.location.search);
-const hostId = params.get('peer');
+// Start rear camera
+navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+  .then(stream => {
+    video.srcObject = stream;
+    startPeer();
+  })
+  .catch(err => {
+    status.textContent = `Camera error: ${err.message}`;
+  });
 
-if (!hostId) {
-  status.textContent = 'No peer ID in URL.';
-} else {
+function startPeer() {
+  const params = new URLSearchParams(window.location.search);
+  const hostId = params.get('peer');
+
+  if (!hostId) {
+    status.textContent = 'No peer ID in URL.';
+    return;
+  }
+
   const peer = new Peer();
 
   peer.on('open', () => {
