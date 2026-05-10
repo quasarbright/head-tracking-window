@@ -37,7 +37,7 @@
     <div id="conn-status2">Connected</div>
   </div>
 
-  <div id="version">gaussian-blur</div>
+  <div id="version">fix-marker-grid</div>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -49,7 +49,7 @@
       try {
         const markerMat = new cv.Mat();
         const dict = cv.getPredefinedDictionary(cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0);
-        cv.aruco_generateImageMarker(dict, 0, 300, markerMat, 1);
+        cv.generateImageMarker(dict, 0, 300, markerMat, 1);
         cv.imshow('marker-canvas', markerMat);
         markerMat.delete();
         console.log('Marker generated via OpenCV');

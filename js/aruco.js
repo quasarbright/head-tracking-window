@@ -94,14 +94,14 @@ function drawDetections(overlayCanvas, detections, videoWidth, videoHeight) {
   }
 }
 
-// DICT_4X4_50 marker ID 37 (verified by detector)
+// DICT_4X4_50 marker ID 0 (verified by cv.generateImageMarker)
 function drawArucoMarker(canvas, size) {
   const grid = [
     [0, 0, 0, 0, 0, 0],
-    [0, 1, 1, 0, 1, 0],
-    [0, 0, 1, 1, 0, 0],
-    [0, 1, 0, 0, 0, 0],
-    [0, 0, 1, 1, 0, 0],
+    [0, 1, 0, 1, 1, 0],
+    [0, 0, 1, 0, 1, 0],
+    [0, 0, 0, 1, 1, 0],
+    [0, 0, 0, 1, 0, 0],
     [0, 0, 0, 0, 0, 0],
   ];
   canvas.width = size;
