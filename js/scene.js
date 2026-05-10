@@ -1,11 +1,10 @@
 // Off-axis perspective projection (Johnny Lee effect).
 // head: {x, y, z} in marker units, origin at screen center, Z toward viewer.
 // screenW, screenH: PC viewport px. markerPx: 150.
-// near/far in marker units.
 function updateCamera(camera, head, screenW, screenH, markerPx) {
   const W = screenW / markerPx;
   const H = screenH / markerPx;
-  const n = 0.1, f = 200;
+  const n = 0.1, f = 1000;
   const { x: hx, y: hy, z: hz } = head;
 
   if (hz <= 0) return;
@@ -22,43 +21,51 @@ function updateCamera(camera, head, screenW, screenH, markerPx) {
     0, 0, -1, 0
   );
   camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
-  camera.position.set(hx, hy, hz);
-  // matrixAutoUpdate=true so we must compose the matrix manually here
   camera.matrix.makeTranslation(hx, hy, hz);
   camera.updateMatrixWorld(true);
+}
+
+async function loadSkyboxList() {
+  try {
+    const res = await fetch('https://api.github.com/repos/quasarbright/head-tracking-window/contents/skyboxes');
+    const files = await res.json();
+    return files.filter(f => f.name.match(/\.(hdr|exr)$/i)).map(f => f.name);
+  } catch (e) {
+    console.warn('Could not fetch skybox list:', e);
+    return [];
+  }
+}
+
+function loadSkybox(scene, renderer, filename) {
+  const loader = new THREE.RGBELoader();
+  loader.load(`skyboxes/${filename}`, texture => {
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    scene.background = texture;
+    scene.environment = texture;
+  });
+}
+
+function buildSkyboxDropdown(scene, renderer, files) {
+  const sel = document.getElementById('skybox-select');
+  sel.innerHTML = '';
+  for (const f of files) {
+    const opt = document.createElement('option');
+    opt.value = f;
+    opt.textContent = f.replace(/\.(hdr|exr)$/i, '');
+    sel.appendChild(opt);
+  }
+  sel.onchange = () => loadSkybox(scene, renderer, sel.value);
+  if (files.length > 0) {
+    loadSkybox(scene, renderer, files[0]);
+  }
 }
 
 function buildScene() {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x111111);
 
-  // Grid floor — y at bottom of typical view
-  const grid = new THREE.GridHelper(60, 60, 0x444444, 0x444444);
-  grid.position.y = -4;
-  scene.add(grid);
-
-  // Boxes placed relative to screen plane (z=0).
-  // At typical head distance z≈13, objects at z=-2 to z=-15 appear well-sized.
-  const boxes = [
-    { pos: [ 0,  0,  -3], color: 0xff4444, size: [1.5, 1.5, 1.5] },
-    { pos: [ 4,  0,  -6], color: 0x44aaff, size: [2,   2,   2  ] },
-    { pos: [-4,  0,  -6], color: 0x44ff88, size: [2,   2,   2  ] },
-    { pos: [ 6,  0, -12], color: 0xffaa00, size: [3,   3,   3  ] },
-    { pos: [-6,  0, -12], color: 0xcc44ff, size: [3,   3,   3  ] },
-    { pos: [ 0,  0, -12], color: 0xffffff, size: [3,   7,   3  ] },
-  ];
-
-  for (const { pos, color, size } of boxes) {
-    const mesh = new THREE.Mesh(
-      new THREE.BoxGeometry(...size),
-      new THREE.MeshLambertMaterial({ color })
-    );
-    mesh.position.set(...pos);
-    scene.add(mesh);
-  }
-
-  scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-  const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+  const dir = new THREE.DirectionalLight(0xffffff, 1.0);
   dir.position.set(5, 10, 5);
   scene.add(dir);
 
@@ -89,14 +96,18 @@ function initScene(container) {
   }
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
   container.appendChild(renderer.domElement);
 
   const camera = new THREE.PerspectiveCamera();
   camera.near = 0.1;
-  camera.far = 200;
+  camera.far = 1000;
   camera.matrixAutoUpdate = false;
 
   const scene = buildScene();
+
+  loadSkyboxList().then(files => buildSkyboxDropdown(scene, renderer, files));
 
   window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);

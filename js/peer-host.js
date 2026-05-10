@@ -28,7 +28,7 @@ peer.on('open', id => {
 peer.on('connection', conn => {
   qrView.style.display = 'none';
   sceneView.classList.add('active');
-  // Show markers now that we're in scene mode
+  document.getElementById('skybox-bar').classList.add('active');
   document.querySelectorAll('.marker-canvas').forEach(c => c.style.visibility = 'visible');
 
   conn.on('open', () => {
@@ -48,6 +48,7 @@ peer.on('connection', conn => {
 
   conn.on('close', () => {
     sceneView.classList.remove('active');
+    document.getElementById('skybox-bar').classList.remove('active');
     document.querySelectorAll('.marker-canvas').forEach(c => c.style.visibility = 'hidden');
     qrView.style.display = 'flex';
     connStatus.textContent = 'Phone disconnected — rescan to reconnect';
