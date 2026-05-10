@@ -37,10 +37,15 @@ async function loadSkyboxList() {
 
 function loadSkybox(scene, renderer, filename) {
   const loader = new THREE.RGBELoader();
+  loader.setDataType(THREE.UnsignedByteType);
   loader.load(`skyboxes/${filename}`, texture => {
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    scene.background = texture;
-    scene.environment = texture;
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    pmrem.compileEquirectangularShader();
+    const envMap = pmrem.fromEquirectangular(texture).texture;
+    scene.background = envMap;
+    scene.environment = envMap;
+    texture.dispose();
+    pmrem.dispose();
   });
 }
 
