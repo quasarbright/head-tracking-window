@@ -2,31 +2,36 @@ const OPENCV_URL = 'https://docs.opencv.org/4.10.0/opencv.js';
 let detector = null;
 
 function loadOpenCV(onReady, onStatus) {
-  onStatus('Loading OpenCV.js…');
+  function update(msg) {
+    onStatus(msg);
+    const el = document.getElementById('debug-overlay');
+    if (el) el.textContent = msg;
+  }
+  update('Loading OpenCV.js…');
   const script = document.createElement('script');
   script.src = OPENCV_URL;
   script.async = true;
   script.onload = () => {
-    onStatus('Initializing…');
+    update('Initializing…');
     cv['onRuntimeInitialized'] = () => {
       try {
         const dictId = cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0;
-        onStatus(`1 dictId=${dictId}`);
+        update(`1 dictId=${dictId}`);
         const dict = cv.getPredefinedDictionary(dictId);
-        onStatus('2 dict ok');
+        update('2 dict ok');
         const params = new cv.aruco_DetectorParameters();
-        onStatus('3 params ok');
+        update('3 params ok');
         const refine = new cv.aruco_RefineParameters(10, 3, true);
-        onStatus('4 refine ok');
+        update('4 refine ok');
         detector = new cv.aruco_ArucoDetector(dict, params, refine);
-        onStatus('5 detector ok');
+        update('5 detector ok');
         onReady();
       } catch (e) {
-        onStatus(`FAIL: ${e.message}`);
+        update(`FAIL: ${e.message}`);
       }
     };
   };
-  script.onerror = () => onStatus('Failed to load OpenCV.js');
+  script.onerror = () => update('Failed to load OpenCV.js');
   document.head.appendChild(script);
 }
 
