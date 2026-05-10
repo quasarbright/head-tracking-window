@@ -39,9 +39,9 @@ peer.on('connection', conn => {
     if (data.type === 'pose') {
       const { x, y, z } = data;
       const LERP = 0.2;
-      head.x += ( x - head.x) * LERP;
-      head.y += ( y - head.y) * LERP;
-      head.z += (-z - head.z) * LERP;
+      head.x += (x - head.x) * LERP;
+      head.y += (y - head.y) * LERP;
+      head.z += (z - head.z) * LERP;
       debug.textContent = `x: ${head.x.toFixed(2)}  y: ${head.y.toFixed(2)}  z: ${head.z.toFixed(2)}`;
     }
   });
