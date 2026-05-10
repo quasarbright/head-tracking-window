@@ -18,7 +18,8 @@ function loadOpenCV(onReady, onStatus) {
         const dictId = cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0;
         const dict = cv.getPredefinedDictionary(dictId);
         const params = new cv.aruco_DetectorParameters();
-        detector = new cv.aruco_ArucoDetector(dict, params);
+        const refine = new cv.aruco_RefineParameters();
+        detector = new cv.aruco_ArucoDetector(dict, params, refine);
         onReady();
       } catch (e) {
         onStatus(`ArUco init error: ${e.message}`);
