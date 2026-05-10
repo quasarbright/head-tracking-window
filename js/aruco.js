@@ -11,6 +11,7 @@ function loadOpenCV(onReady, onStatus) {
     cv['onRuntimeInitialized'] = () => {
       try {
         const dictId = cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0;
+        onStatus(`OpenCV ready, dictId=${dictId}`);
         const dict = cv.getPredefinedDictionary(dictId);
 
         const params = new cv.aruco_DetectorParameters();
@@ -39,11 +40,13 @@ function detectMarkers(video, processingCanvas) {
   processingCanvas.getContext('2d').drawImage(video, 0, 0, processingCanvas.width, processingCanvas.height);
 
   const src = cv.imread(processingCanvas);
+  const gray = new cv.Mat();
+  cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
   const corners = new cv.MatVector();
   const ids = new cv.Mat();
 
   try {
-    detector.detectMarkers(src, corners, ids);
+    detector.detectMarkers(gray, corners, ids);
     const results = [];
     for (let i = 0; i < ids.rows; i++) {
       const corner = corners.get(i);
@@ -54,9 +57,12 @@ function detectMarkers(video, processingCanvas) {
       results.push({ id: ids.data32S[i], corners: pts });
       corner.delete();
     }
+    // Expose grayscale frame for preview
+    detectMarkers._lastGray = gray;
     return results;
   } finally {
     src.delete();
+    gray.delete();
     corners.delete();
     ids.delete();
   }
