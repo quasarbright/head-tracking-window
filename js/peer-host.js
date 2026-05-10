@@ -1,16 +1,7 @@
 const qrView = document.getElementById('qr-view');
-const sceneView = document.getElementById('scene-view');
 const connStatus = document.getElementById('conn-status');
 const debug = document.getElementById('debug');
 
-// Show scene immediately so keyboard mode works before phone connects
-sceneView.classList.add('active');
-qrView.style.display = 'flex';
-qrView.style.position = 'fixed';
-qrView.style.zIndex = '20';
-qrView.style.background = 'rgba(0,0,0,0.7)';
-qrView.style.padding = '24px';
-qrView.style.borderRadius = '12px';
 
 const peer = new Peer();
 
