@@ -47,11 +47,13 @@ function detectMarkers(video, processingCanvas) {
   processingCanvas.getContext('2d').drawImage(video, 0, 0, processingCanvas.width, processingCanvas.height);
 
   const src = cv.imread(processingCanvas);
+  const blurred = new cv.Mat();
+  cv.GaussianBlur(src, blurred, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
   const corners = new cv.MatVector();
   const ids = new cv.Mat();
 
   try {
-    detector.detectMarkers(src, corners, ids);
+    detector.detectMarkers(blurred, corners, ids);
     const results = [];
     for (let i = 0; i < ids.rows; i++) {
       const corner = corners.get(i);
@@ -65,6 +67,7 @@ function detectMarkers(video, processingCanvas) {
     return results;
   } finally {
     src.delete();
+    blurred.delete();
     corners.delete();
     ids.delete();
   }

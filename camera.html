@@ -12,14 +12,14 @@
     #version { position: fixed; bottom: 8px; right: 12px; font-size: 11px; color: rgba(255,255,255,0.3); font-family: monospace; }
     #log { position: fixed; bottom: 44px; left: 0; right: 0; text-align: center; color: #aaa; font-family: monospace; font-size: 13px; text-shadow: 0 1px 4px #000; }
     #debug-overlay { position: fixed; top: 12px; left: 12px; right: 12px; color: #ff0; font-family: monospace; font-size: 12px; text-shadow: 0 1px 3px #000; pointer-events: none; white-space: pre-wrap; }
-    #preview { position: fixed; bottom: 60px; right: 12px; width: 160px; height: 90px; border: 1px solid #ff0; }
+    #preview { position: fixed; bottom: 60px; right: 12px; width: 90px; height: 160px; border: 1px solid #ff0; object-fit: contain; }
   </style>
 </head>
 <body>
   <video id="video" autoplay playsinline muted></video>
   <canvas id="overlay"></canvas>
   <canvas id="preview"></canvas>
-  <div id="version">init-to-overlay</div>
+  <div id="version">gaussian-blur</div>
   <div id="debug-overlay"></div>
   <div id="log"></div>
   <div id="status">Starting camera…</div>
