@@ -1,4 +1,8 @@
-# Head-Tracked Perspective Window — Project Brief
+# Head-Tracked Perspective Window
+
+## About This File
+
+This is the living document for the project. Read it at the start of every session. Update it immediately as decisions are made, approaches change, or implementation diverges from the plan. Do not create separate planning or decision files.
 
 ## Concept
 
@@ -30,7 +34,7 @@ Two pages, both static (GitHub Pages compatible, no backend required):
 
 - **Three.js** — 3D rendering on PC
 - **PeerJS** — serverless WebRTC peer-to-peer data channel (uses PeerJS free hosted signaling, data flows P2P over local network once connected)
-- **OpenCV.js** — ArUco marker detection and `solvePnP` in the browser (handles the full pipeline: detection + pose estimation)
+- **OpenCV.js** — ArUco marker detection and `solvePnP` in the browser (handles the full pipeline: detection + pose estimation). If runtime performance on mobile is a problem, replace with js-aruco2 + custom solvePnP implementation.
 - **qrcode.js** — generate QR code on PC page
 
 ## Off-Axis Perspective Projection
@@ -38,9 +42,10 @@ Two pages, both static (GitHub Pages compatible, no backend required):
 This is the critical math. Standard Three.js `PerspectiveCamera` won't work correctly — you need an asymmetric frustum based on the physical relationship between the viewer and the screen.
 
 Given:
-- Physical screen width `W` and height `H` (measured in real units, e.g. cm)
-- Head position `(hx, hy, hz)` relative to screen center (derived from ArUco solvePnP)
-- Near plane distance `n`, far plane `f`
+- Screen width `W` and height `H` in marker units (`screen_px / marker_px`)
+- Head position `(hx, hy, hz)` relative to screen center in marker units (from solvePnP)
+- Near plane distance `n`, far plane `f` (also in marker units)
+- Note: physical units are not needed — the frustum math depends only on ratios, so any consistent unit system produces correct parallax
 
 Compute the frustum bounds:
 
@@ -53,7 +58,13 @@ top    = n * ( H/2 - hy) / hz
 
 Apply with:
 ```js
-camera.projectionMatrix.makeFrustum(left, right, bottom, top, near, far);
+// NOTE: makeFrustum was removed in Three.js r125+. Build the matrix manually:
+camera.projectionMatrix.set(
+  2*n/(right-left), 0, (right+left)/(right-left), 0,
+  0, 2*n/(top-bottom), (top+bottom)/(top-bottom), 0,
+  0, 0, -(f+n)/(f-n), -2*f*n/(f-n),
+  0, 0, -1, 0
+);
 camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
 // Also translate the camera to head position
 camera.position.set(hx, hy, hz);
@@ -109,7 +120,7 @@ This makes parallax immediately obvious when moving your head.
 
 ## Physical Setup Notes (for README)
 
-- User should measure their monitor's physical width and height in cm and enter it (or hardcode for now)
+- No physical measurement needed — screen dimensions are expressed in marker units, derived from pixel ratios at render time (`screen_width_px / marker_width_px`)
 - Phone should be mounted on a headband or taped to glasses, pointing at the screen
 - Recommend sitting ~40–80cm from screen for best tracking accuracy
 - Room should be reasonably lit for marker detection
@@ -118,6 +129,7 @@ This makes parallax immediately obvious when moving your head.
 
 ```
 /
+├── CLAUDE.md           # This file — living project document
 ├── index.html          # PC page (Three.js scene + PeerJS host + QR code)
 ├── camera.html         # Phone page (camera + ArUco + PeerJS client)
 ├── js/
