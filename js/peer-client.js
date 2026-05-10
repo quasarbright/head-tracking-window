@@ -31,7 +31,7 @@ document.addEventListener('touchend', e => {
   const x = touch.clientX / window.innerWidth;
   const y = touch.clientY / window.innerHeight;
   videoTrack.applyConstraints({ advanced: [{ focusMode: 'manual', pointsOfInterest: [{ x, y }] }] })
-    .catch(() => {}); // silently ignore if unsupported
+    .catch(() => {});
 });
 
 function startAruco() {
@@ -62,6 +62,10 @@ function connectPeer(hostId) {
 
 function startLoop(conn) {
   let frameCount = 0;
+  let lastDetections = [];
+  let lastDetectTime = 0;
+  const PERSIST_MS = 500;
+
   function loop() {
     frameCount++;
     let detections = [];
@@ -72,7 +76,13 @@ function startLoop(conn) {
       dbg('error', e.message);
     }
 
-    // Show the processing canvas (color, but same resolution as what OpenCV saw)
+    if (detections.length > 0) {
+      lastDetections = detections;
+      lastDetectTime = Date.now();
+    }
+    const showDetections = Date.now() - lastDetectTime < PERSIST_MS ? lastDetections : [];
+
+    // Preview thumbnail
     const preview = document.getElementById('preview');
     if (preview && processingCanvas.width) {
       preview.width = processingCanvas.width;
@@ -84,7 +94,7 @@ function startLoop(conn) {
     dbg('video', `${video.videoWidth}x${video.videoHeight}`);
     dbg('detected', detections.length);
 
-    drawDetections(overlay, detections, video.videoWidth, video.videoHeight);
+    drawDetections(overlay, showDetections, video.videoWidth, video.videoHeight);
 
     if (detections.length > 0) {
       const { id, corners } = detections[0];

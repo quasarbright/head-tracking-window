@@ -40,13 +40,11 @@ function detectMarkers(video, processingCanvas) {
   processingCanvas.getContext('2d').drawImage(video, 0, 0, processingCanvas.width, processingCanvas.height);
 
   const src = cv.imread(processingCanvas);
-  const gray = new cv.Mat();
-  cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
   const corners = new cv.MatVector();
   const ids = new cv.Mat();
 
   try {
-    detector.detectMarkers(gray, corners, ids);
+    detector.detectMarkers(src, corners, ids);
     const results = [];
     for (let i = 0; i < ids.rows; i++) {
       const corner = corners.get(i);
@@ -60,7 +58,6 @@ function detectMarkers(video, processingCanvas) {
     return results;
   } finally {
     src.delete();
-    gray.delete();
     corners.delete();
     ids.delete();
   }
