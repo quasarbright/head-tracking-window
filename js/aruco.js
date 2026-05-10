@@ -10,20 +10,21 @@ function loadOpenCV(onReady, onStatus) {
     onStatus('Initializing…');
     cv['onRuntimeInitialized'] = () => {
       try {
-        // Log available aruco keys to help debug API differences across builds
-        const arucoKeys = Object.keys(cv).filter(k => k.toLowerCase().includes('aruco'));
-        console.log('ArUco keys in this build:', arucoKeys);
-
-        // DICT_4X4_50 = 0 in OpenCV enum; use constant if available, else fallback to 0
         const dictId = cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0;
         const dict = cv.getPredefinedDictionary(dictId);
+
+        // Tuned for screen display: lower adaptive threshold, looser corner accuracy
         const params = new cv.aruco_DetectorParameters();
+        params.adaptiveThreshConstant = 3;
+        params.minMarkerPerimeterRate = 0.02;
+        params.polygonalApproxAccuracyRate = 0.08;
+        params.cornerRefinementMethod = 1; // CORNER_REFINE_SUBPIX
+
         const refine = new cv.aruco_RefineParameters(10, 3, true);
         detector = new cv.aruco_ArucoDetector(dict, params, refine);
         onReady();
       } catch (e) {
         onStatus(`ArUco init error: ${e.message}`);
-        console.error('ArUco init failed:', e);
       }
     };
   };
@@ -31,9 +32,9 @@ function loadOpenCV(onReady, onStatus) {
   document.head.appendChild(script);
 }
 
-// Returns [{id, corners: [[x,y], ...]}]
 const PROCESS_WIDTH = 640;
 
+// Returns [{id, corners: [[x,y], ...]}] — corners in native video pixel space
 function detectMarkers(video, processingCanvas) {
   if (!detector || !video.videoWidth) return [];
 
@@ -87,8 +88,7 @@ function drawDetections(overlayCanvas, detections, videoWidth, videoHeight) {
   }
 }
 
-// DICT_4X4_50 marker ID 0
-// Data bits derived from OpenCV source: 0xd,0x6,0x8,0x6 = rows 1101 0110 1000 0110
+// DICT_4X4_50 marker ID 37 (verified by detector)
 function drawArucoMarker(canvas, size) {
   const grid = [
     [0, 0, 0, 0, 0, 0],

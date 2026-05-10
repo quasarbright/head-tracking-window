@@ -1,6 +1,5 @@
 const statusEl = document.getElementById('status');
 const logEl = document.getElementById('log');
-const debugEl = document.getElementById('debug-overlay');
 const video = document.getElementById('video');
 const overlay = document.getElementById('overlay');
 const processingCanvas = document.createElement('canvas');
@@ -11,7 +10,8 @@ function setLog(msg) { logEl.textContent = msg; }
 const debugLines = {};
 function dbg(key, val) {
   debugLines[key] = `${key}: ${val}`;
-  debugEl.textContent = Object.values(debugLines).join('\n');
+  const el = document.getElementById('debug-overlay');
+  if (el) el.textContent = Object.values(debugLines).join('\n');
 }
 
 let videoTrack = null;
