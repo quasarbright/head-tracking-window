@@ -32,19 +32,23 @@ peer.on('connection', conn => {
     conn.send({ type: 'config', screenW: window.innerWidth, screenH: window.innerHeight });
   });
 
+  document.getElementById('kbd-hint').style.display = 'none';
+
   conn.on('data', data => {
     if (data.type === 'pose') {
       const { x, y, z } = data;
-      // Update the shared head object defined in index.html
-      head.x = x;
-      head.y = y;
-      head.z = z;
-      debug.textContent = `x: ${x.toFixed(2)}  y: ${y.toFixed(2)}  z: ${z.toFixed(2)}`;
+      // Smooth toward received pose to reduce jitter
+      const LERP = 0.2;
+      head.x += (x - head.x) * LERP;
+      head.y += (y - head.y) * LERP;
+      head.z += (z - head.z) * LERP;
+      debug.textContent = `x: ${head.x.toFixed(2)}  y: ${head.y.toFixed(2)}  z: ${head.z.toFixed(2)}`;
     }
   });
 
   conn.on('close', () => {
     qrView.style.display = 'flex';
+    document.getElementById('kbd-hint').style.display = 'block';
     connStatus.textContent = 'Phone disconnected — rescan to reconnect';
   });
 });
