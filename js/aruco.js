@@ -32,12 +32,15 @@ function loadOpenCV(onReady, onStatus) {
 }
 
 // Returns [{id, corners: [[x,y], ...]}]
+const PROCESS_WIDTH = 640;
+
 function detectMarkers(video, processingCanvas) {
   if (!detector || !video.videoWidth) return [];
 
-  processingCanvas.width = video.videoWidth;
-  processingCanvas.height = video.videoHeight;
-  processingCanvas.getContext('2d').drawImage(video, 0, 0);
+  const scale = PROCESS_WIDTH / video.videoWidth;
+  processingCanvas.width = PROCESS_WIDTH;
+  processingCanvas.height = Math.round(video.videoHeight * scale);
+  processingCanvas.getContext('2d').drawImage(video, 0, 0, processingCanvas.width, processingCanvas.height);
 
   const src = cv.imread(processingCanvas);
   const corners = new cv.MatVector();
@@ -50,7 +53,7 @@ function detectMarkers(video, processingCanvas) {
       const corner = corners.get(i);
       const pts = [];
       for (let j = 0; j < 4; j++) {
-        pts.push([corner.data32F[j * 2], corner.data32F[j * 2 + 1]]);
+        pts.push([corner.data32F[j * 2] / scale, corner.data32F[j * 2 + 1] / scale]);
       }
       results.push({ id: ids.data32S[i], corners: pts });
       corner.delete();

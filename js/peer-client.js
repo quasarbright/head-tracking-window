@@ -14,7 +14,7 @@ function dbg(key, val) {
   debugEl.textContent = Object.values(debugLines).join('\n');
 }
 
-navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false })
   .then(stream => {
     video.srcObject = stream;
     video.onloadedmetadata = () => startAruco();

@@ -5,7 +5,7 @@ const debug = document.getElementById('debug');
 
 // Draw ArUco marker on the canvas (300px — large enough to detect at ~60cm)
 const markerCanvas = document.getElementById('marker-canvas');
-drawArucoMarker(markerCanvas, 300);
+drawArucoMarker(markerCanvas, 500);
 
 const peer = new Peer();
 
