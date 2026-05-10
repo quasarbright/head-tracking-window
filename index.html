@@ -4,23 +4,37 @@
   <meta charset="UTF-8">
   <title>Head Tracking Window</title>
   <style>
-    body { margin: 0; background: #111; color: #eee; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-    #qr-container { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-    #qr-container p { margin: 0; font-size: 14px; color: #aaa; }
-    #log { margin-top: 24px; padding: 12px; background: #222; border-radius: 6px; min-width: 300px; min-height: 60px; font-size: 13px; white-space: pre-wrap; }
-    #status { font-size: 13px; color: #aaa; margin-top: 8px; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #111; color: #eee; font-family: monospace; height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+    #qr-view { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    #qr-view p { margin: 0; font-size: 14px; color: #aaa; }
+
+    #marker-view { display: none; flex-direction: column; align-items: center; gap: 24px; }
+    #marker-view.active { display: flex; }
+
+    #marker-canvas { image-rendering: pixelated; }
+    #debug { font-size: 13px; color: #aaa; text-align: center; }
+    #conn-status { font-size: 13px; color: #888; }
   </style>
 </head>
 <body>
-  <div id="qr-container">
+
+  <div id="qr-view">
     <p>Scan with phone to connect</p>
     <div id="qr"></div>
-    <div id="status">Waiting for connection…</div>
+    <div id="conn-status">Waiting for connection…</div>
   </div>
-  <pre id="log"></pre>
+
+  <div id="marker-view">
+    <canvas id="marker-canvas"></canvas>
+    <div id="debug">Waiting for detections…</div>
+    <div id="conn-status2">Connected</div>
+  </div>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="js/aruco.js"></script>
   <script src="js/peer-host.js"></script>
 </body>
 </html>

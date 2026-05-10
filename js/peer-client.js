@@ -1,51 +1,60 @@
-const status = document.getElementById('status');
-const log = document.getElementById('log');
+const statusEl = document.getElementById('status');
+const logEl = document.getElementById('log');
 const video = document.getElementById('video');
+const overlay = document.getElementById('overlay');
+const processingCanvas = document.createElement('canvas');
 
-// Start rear camera
+function setStatus(msg) { statusEl.textContent = msg; }
+function setLog(msg) { logEl.textContent = msg; }
+
 navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
   .then(stream => {
     video.srcObject = stream;
-    startPeer();
+    video.onloadedmetadata = () => startAruco();
   })
-  .catch(err => {
-    status.textContent = `Camera error: ${err.message}`;
-  });
+  .catch(err => setStatus(`Camera error: ${err.message}`));
 
-function startPeer() {
-  const params = new URLSearchParams(window.location.search);
-  const hostId = params.get('peer');
+function startAruco() {
+  loadOpenCV(() => {
+    setStatus('Searching for marker…');
+    const params = new URLSearchParams(window.location.search);
+    const hostId = params.get('peer');
+    const conn = hostId ? connectPeer(hostId) : null;
+    if (!hostId) setLog('No peer ID — running detection only');
+    startLoop(conn);
+  }, setStatus);
+}
 
-  if (!hostId) {
-    status.textContent = 'No peer ID in URL.';
-    return;
-  }
-
+function connectPeer(hostId) {
   const peer = new Peer();
+  let conn = null;
 
   peer.on('open', () => {
-    status.textContent = 'Connecting to PC…';
-    const conn = peer.connect(hostId);
-
-    conn.on('open', () => {
-      status.textContent = 'Connected';
-      let count = 0;
-      setInterval(() => {
-        conn.send({ hello: true, count: count++ });
-        log.textContent = `Sent ${count} messages`;
-      }, 1000);
-    });
-
-    conn.on('error', err => {
-      status.textContent = `Connection error: ${err.message}`;
-    });
-
-    conn.on('close', () => {
-      status.textContent = 'Disconnected';
-    });
+    conn = peer.connect(hostId);
+    conn.on('open', () => setLog('Connected to PC'));
+    conn.on('close', () => setLog('Disconnected'));
+    conn.on('error', err => setLog(`Conn error: ${err.message}`));
   });
 
-  peer.on('error', err => {
-    status.textContent = `Peer error: ${err.message}`;
-  });
+  peer.on('error', err => setLog(`Peer error: ${err.message}`));
+  return { send: data => conn && conn.open && conn.send(data) };
+}
+
+function startLoop(conn) {
+  function loop() {
+    const detections = detectMarkers(video, processingCanvas);
+    drawDetections(overlay, detections, video.videoWidth, video.videoHeight);
+
+    if (detections.length > 0) {
+      const { id, corners } = detections[0];
+      setStatus(`Marker detected: ID ${id}`);
+      setLog(corners.map(([x, y]) => `(${x.toFixed(0)},${y.toFixed(0)})`).join('  '));
+      conn && conn.send({ type: 'detection', markers: detections });
+    } else {
+      setStatus('Searching for marker…');
+    }
+
+    requestAnimationFrame(loop);
+  }
+  loop();
 }
