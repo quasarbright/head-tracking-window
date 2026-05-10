@@ -9,10 +9,21 @@ function loadOpenCV(onReady, onStatus) {
   script.onload = () => {
     onStatus('Initializing…');
     cv['onRuntimeInitialized'] = () => {
-      const dict = cv.getPredefinedDictionary(cv.aruco_DICT_4X4_50);
-      const params = new cv.aruco_DetectorParameters();
-      detector = new cv.aruco_ArucoDetector(dict, params);
-      onReady();
+      try {
+        // Log available aruco keys to help debug API differences across builds
+        const arucoKeys = Object.keys(cv).filter(k => k.toLowerCase().includes('aruco'));
+        console.log('ArUco keys in this build:', arucoKeys);
+
+        // DICT_4X4_50 = 0 in OpenCV enum; use constant if available, else fallback to 0
+        const dictId = cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0;
+        const dict = cv.getPredefinedDictionary(dictId);
+        const params = new cv.aruco_DetectorParameters();
+        detector = new cv.aruco_ArucoDetector(dict, params);
+        onReady();
+      } catch (e) {
+        onStatus(`ArUco init error: ${e.message}`);
+        console.error('ArUco init failed:', e);
+      }
     };
   };
   script.onerror = () => onStatus('Failed to load OpenCV.js');
