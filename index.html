@@ -7,10 +7,11 @@
     * { box-sizing: border-box; }
     body { margin: 0; background: #111; color: #eee; font-family: monospace; height: 100vh; display: flex; align-items: center; justify-content: center; }
 
-    #qr-view { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    #qr-view { display: flex; flex-direction: column; align-items: center; gap: 16px; position: relative; z-index: 10; }
     #qr-view p { margin: 0; font-size: 14px; color: #aaa; }
 
-    #scene-view { display: block; position: fixed; inset: 0; }
+    #scene-view { display: none; position: fixed; inset: 0; }
+    #scene-view.active { display: block; }
 
     .marker-canvas { image-rendering: pixelated; padding: 20px; background: white; position: fixed; z-index: 10; visibility: hidden; }
     .marker-canvas.tl { top: 0; left: 0; }
@@ -26,7 +27,6 @@
     #copy-btn { margin-top: 4px; padding: 6px 14px; background: #333; color: #eee; border: 1px solid #555; border-radius: 4px; font-family: monospace; cursor: pointer; }
     #copy-btn:hover { background: #444; }
     #copy-btn.copied { color: #4f4; border-color: #4f4; }
-    #kbd-hint { position: fixed; top: 8px; left: 12px; font-size: 11px; color: #444; z-index: 10; pointer-events: none; }
   </style>
 </head>
 <body>
@@ -45,11 +45,10 @@
     <canvas id="marker-br" class="marker-canvas br"></canvas>
     <canvas id="marker-tm" class="marker-canvas tm"></canvas>
     <canvas id="marker-bm" class="marker-canvas bm"></canvas>
-    <div id="debug">Waiting for detections…</div>
-    <div id="kbd-hint">WASD / QE — move head (keyboard mode)</div>
+    <div id="debug"></div>
   </div>
 
-  <div id="version">integration</div>
+  <div id="version">qr-first</div>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -60,32 +59,19 @@
   <script>
     const sceneResult = initScene(document.getElementById('scene-view'));
     const head = { x: 0, y: 0, z: 6 };
+
     if (sceneResult) {
-    const { renderer, camera, scene } = sceneResult;
+      const { renderer, camera, scene } = sceneResult;
 
-    function render() {
-      updateCamera(camera, head, window.innerWidth, window.innerHeight, MARKER_PX); // MARKER_PX from aruco.js
-      renderer.render(scene, camera);
-      requestAnimationFrame(render);
+      function render() {
+        updateCamera(camera, head, window.innerWidth, window.innerHeight, MARKER_PX);
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+      }
+      render();
     }
-    render();
 
-    // Keyboard controls (WASD = x/z, QE = y)
-    const keys = {};
-    window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
-    window.addEventListener('keyup',   e => keys[e.key.toLowerCase()] = false);
-    const SPEED = 0.05;
-    setInterval(() => {
-      if (keys['a']) head.x -= SPEED;
-      if (keys['d']) head.x += SPEED;
-      if (keys['w']) head.z += SPEED;
-      if (keys['s']) head.z -= SPEED;
-      if (keys['q']) head.y += SPEED;
-      if (keys['e']) head.y -= SPEED;
-    }, 16);
-    } // end if (sceneResult)
-
-    // Generate markers via OpenCV
+    // Generate markers via OpenCV (done in background; markers shown once phone connects)
     loadOpenCV(() => {
       try {
         const dict = cv.getPredefinedDictionary(cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0);
@@ -102,7 +88,6 @@
           cv.generateImageMarker(dict, id, 150, mat, 1);
           cv.imshow(canvasId, mat);
           mat.delete();
-          document.getElementById(canvasId).style.visibility = 'visible';
         }
       } catch(e) {
         console.warn('OpenCV marker generation failed:', e.message);

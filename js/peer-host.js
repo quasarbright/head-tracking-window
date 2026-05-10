@@ -1,7 +1,7 @@
 const qrView = document.getElementById('qr-view');
+const sceneView = document.getElementById('scene-view');
 const connStatus = document.getElementById('conn-status');
 const debug = document.getElementById('debug');
-
 
 const peer = new Peer();
 
@@ -27,17 +27,17 @@ peer.on('open', id => {
 
 peer.on('connection', conn => {
   qrView.style.display = 'none';
+  sceneView.classList.add('active');
+  // Show markers now that we're in scene mode
+  document.querySelectorAll('.marker-canvas').forEach(c => c.style.visibility = 'visible');
 
   conn.on('open', () => {
     conn.send({ type: 'config', screenW: window.innerWidth, screenH: window.innerHeight });
   });
 
-  document.getElementById('kbd-hint').style.display = 'none';
-
   conn.on('data', data => {
     if (data.type === 'pose') {
       const { x, y, z } = data;
-      // Smooth toward received pose to reduce jitter
       const LERP = 0.2;
       head.x += (x - head.x) * LERP;
       head.y += (y - head.y) * LERP;
@@ -47,8 +47,9 @@ peer.on('connection', conn => {
   });
 
   conn.on('close', () => {
+    sceneView.classList.remove('active');
+    document.querySelectorAll('.marker-canvas').forEach(c => c.style.visibility = 'hidden');
     qrView.style.display = 'flex';
-    document.getElementById('kbd-hint').style.display = 'block';
     connStatus.textContent = 'Phone disconnected — rescan to reconnect';
   });
 });
