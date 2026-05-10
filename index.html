@@ -49,7 +49,7 @@
     <div id="kbd-hint">WASD / QE — move head (keyboard mode)</div>
   </div>
 
-  <div id="version">fix-marker-px</div>
+  <div id="version">webgl-error</div>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -58,10 +58,10 @@
   <script src="js/scene.js"></script>
   <script src="js/peer-host.js"></script>
   <script>
-    const { renderer, camera, scene } = initScene(document.getElementById('scene-view'));
-
-    // Head position — driven by keyboard or phone
+    const sceneResult = initScene(document.getElementById('scene-view'));
     const head = { x: 0, y: 0, z: 6 };
+    if (sceneResult) {
+    const { renderer, camera, scene } = sceneResult;
 
     function render() {
       updateCamera(camera, head, window.innerWidth, window.innerHeight, MARKER_PX); // MARKER_PX from aruco.js
@@ -83,6 +83,7 @@
       if (keys['q']) head.y += SPEED;
       if (keys['e']) head.y -= SPEED;
     }, 16);
+    } // end if (sceneResult)
 
     // Generate markers via OpenCV
     loadOpenCV(() => {

@@ -64,7 +64,27 @@ function buildScene() {
 }
 
 function initScene(container) {
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+  } catch (e) {
+    container.innerHTML = `
+      <div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#111;color:#eee;font-family:monospace;padding:40px;">
+        <div style="max-width:480px;text-align:center;line-height:1.6">
+          <div style="font-size:2em;margin-bottom:16px">⚠️</div>
+          <strong>WebGL is not available</strong>
+          <p style="color:#aaa;margin:16px 0">The 3D scene requires WebGL, which your browser has disabled.</p>
+          <p style="color:#888;font-size:13px">To fix this in Chrome:<br>
+            1. Go to <code>chrome://settings/system</code><br>
+            2. Enable <em>Use graphics acceleration when available</em><br>
+            3. Relaunch the browser<br><br>
+            If that doesn't help, try <code>chrome://flags/#use-angle</code><br>
+            and switch the ANGLE backend to <strong>OpenGL</strong> or <strong>Vulkan</strong>.
+          </p>
+        </div>
+      </div>`;
+    return null;
+  }
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   container.appendChild(renderer.domElement);
