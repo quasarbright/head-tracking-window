@@ -23,26 +23,29 @@ function updateCamera(camera, head, screenW, screenH, markerPx) {
   );
   camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
   camera.position.set(hx, hy, hz);
-  camera.updateMatrixWorld();
+  // matrixAutoUpdate=true so we must compose the matrix manually here
+  camera.matrix.makeTranslation(hx, hy, hz);
+  camera.updateMatrixWorld(true);
 }
 
 function buildScene() {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x111111);
 
-  // Grid floor
-  const grid = new THREE.GridHelper(40, 40, 0x444444, 0x444444);
-  grid.position.y = -3;
+  // Grid floor — y at bottom of typical view
+  const grid = new THREE.GridHelper(60, 60, 0x444444, 0x444444);
+  grid.position.y = -4;
   scene.add(grid);
 
-  // Boxes at various depths
+  // Boxes placed relative to screen plane (z=0).
+  // At typical head distance z≈13, objects at z=-2 to z=-15 appear well-sized.
   const boxes = [
-    { pos: [0,  0, -5],  color: 0xff4444, size: [1.5, 1.5, 1.5] },
-    { pos: [3,  0, -10], color: 0x44aaff, size: [2, 2, 2] },
-    { pos: [-3, 0, -10], color: 0x44ff88, size: [2, 2, 2] },
-    { pos: [5,  0, -20], color: 0xffaa00, size: [3, 3, 3] },
-    { pos: [-5, 0, -20], color: 0xcc44ff, size: [3, 3, 3] },
-    { pos: [0,  0, -20], color: 0xffffff, size: [3, 6, 3] },
+    { pos: [ 0,  0,  -3], color: 0xff4444, size: [1.5, 1.5, 1.5] },
+    { pos: [ 4,  0,  -6], color: 0x44aaff, size: [2,   2,   2  ] },
+    { pos: [-4,  0,  -6], color: 0x44ff88, size: [2,   2,   2  ] },
+    { pos: [ 6,  0, -12], color: 0xffaa00, size: [3,   3,   3  ] },
+    { pos: [-6,  0, -12], color: 0xcc44ff, size: [3,   3,   3  ] },
+    { pos: [ 0,  0, -12], color: 0xffffff, size: [3,   7,   3  ] },
   ];
 
   for (const { pos, color, size } of boxes) {
@@ -54,7 +57,6 @@ function buildScene() {
     scene.add(mesh);
   }
 
-  // Lights
   scene.add(new THREE.AmbientLight(0xffffff, 0.4));
   const dir = new THREE.DirectionalLight(0xffffff, 0.8);
   dir.position.set(5, 10, 5);
