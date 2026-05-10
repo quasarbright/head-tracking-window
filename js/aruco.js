@@ -11,16 +11,18 @@ function loadOpenCV(onReady, onStatus) {
     cv['onRuntimeInitialized'] = () => {
       try {
         const dictId = cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0;
-        onStatus(`OpenCV ready, dictId=${dictId}`);
+        onStatus(`1 dictId=${dictId}`);
         const dict = cv.getPredefinedDictionary(dictId);
-
+        onStatus('2 dict ok');
         const params = new cv.aruco_DetectorParameters();
-
+        onStatus('3 params ok');
         const refine = new cv.aruco_RefineParameters(10, 3, true);
+        onStatus('4 refine ok');
         detector = new cv.aruco_ArucoDetector(dict, params, refine);
+        onStatus('5 detector ok');
         onReady();
       } catch (e) {
-        onStatus(`ArUco init error: ${e.message}`);
+        onStatus(`FAIL: ${e.message}`);
       }
     };
   };
