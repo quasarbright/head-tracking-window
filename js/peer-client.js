@@ -1,11 +1,18 @@
 const statusEl = document.getElementById('status');
 const logEl = document.getElementById('log');
+const debugEl = document.getElementById('debug-overlay');
 const video = document.getElementById('video');
 const overlay = document.getElementById('overlay');
 const processingCanvas = document.createElement('canvas');
 
 function setStatus(msg) { statusEl.textContent = msg; }
 function setLog(msg) { logEl.textContent = msg; }
+
+const debugLines = {};
+function dbg(key, val) {
+  debugLines[key] = `${key}: ${val}`;
+  debugEl.textContent = Object.values(debugLines).join('\n');
+}
 
 navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
   .then(stream => {
@@ -48,9 +55,13 @@ function startLoop(conn) {
     try {
       detections = detectMarkers(video, processingCanvas);
     } catch (e) {
-      console.error('detectMarkers error:', e);
       setStatus(`Detection error: ${e.message}`);
+      dbg('error', e.message);
     }
+
+    dbg('frame', frameCount);
+    dbg('video', `${video.videoWidth}x${video.videoHeight}`);
+    dbg('detected', detections.length);
 
     drawDetections(overlay, detections, video.videoWidth, video.videoHeight);
 
@@ -61,7 +72,6 @@ function startLoop(conn) {
       conn && conn.send({ type: 'detection', markers: detections });
     } else {
       setStatus('Searching for marker…');
-      if (frameCount % 60 === 0) console.log(`Frame ${frameCount}, no detection. Video: ${video.videoWidth}x${video.videoHeight}`);
     }
 
     requestAnimationFrame(loop);
