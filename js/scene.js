@@ -27,11 +27,10 @@ function updateCamera(camera, head, screenW, screenH, markerPx) {
 
 async function loadSkyboxList() {
   try {
-    const res = await fetch('https://api.github.com/repos/quasarbright/head-tracking-window/contents/skyboxes');
-    const files = await res.json();
-    return files.filter(f => f.name.match(/\.(hdr|exr)$/i)).map(f => f.name);
+    const res = await fetch('skyboxes/manifest.json');
+    return await res.json();
   } catch (e) {
-    console.warn('Could not fetch skybox list:', e);
+    console.warn('Could not load skybox manifest:', e);
     return [];
   }
 }
