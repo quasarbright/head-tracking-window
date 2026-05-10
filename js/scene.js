@@ -23,6 +23,11 @@ function updateCamera(camera, head, screenW, screenH, markerPx) {
   camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
   camera.matrix.makeTranslation(hx, hy, hz);
   camera.updateMatrixWorld(true);
+
+  const r2d = 180 / Math.PI;
+  const fovH = (Math.atan(right / n) - Math.atan(left / n)) * r2d;
+  const fovV = (Math.atan(top / n) - Math.atan(bottom / n)) * r2d;
+  return { fovH, fovV };
 }
 
 async function loadSkyboxList() {
