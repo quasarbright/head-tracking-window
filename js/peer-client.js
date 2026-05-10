@@ -72,10 +72,12 @@ function startLoop(conn) {
       dbg('error', e.message);
     }
 
-    // Show grayscale frame OpenCV actually processed
+    // Show the processing canvas (color, but same resolution as what OpenCV saw)
     const preview = document.getElementById('preview');
-    if (preview && detectMarkers._lastGray) {
-      cv.imshow(preview, detectMarkers._lastGray);
+    if (preview && processingCanvas.width) {
+      preview.width = processingCanvas.width;
+      preview.height = processingCanvas.height;
+      preview.getContext('2d').drawImage(processingCanvas, 0, 0);
     }
 
     dbg('frame', frameCount);

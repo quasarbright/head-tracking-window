@@ -57,8 +57,6 @@ function detectMarkers(video, processingCanvas) {
       results.push({ id: ids.data32S[i], corners: pts });
       corner.delete();
     }
-    // Expose grayscale frame for preview
-    detectMarkers._lastGray = gray;
     return results;
   } finally {
     src.delete();
