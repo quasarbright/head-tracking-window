@@ -55,7 +55,7 @@
     <select id="skybox-select"></select>
   </div>
 
-  <div id="version">skybox-equirect</div>
+  <div id="version">fov-display</div>
 
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -72,7 +72,12 @@
       const { renderer, camera, scene } = sceneResult;
 
       function render() {
-        updateCamera(camera, head, window.innerWidth, window.innerHeight, MARKER_PX);
+        const fov = updateCamera(camera, head, window.innerWidth, window.innerHeight, MARKER_PX);
+        if (fov) {
+          const d = document.getElementById('debug');
+          const pose = d.textContent.split('\n')[0];
+          d.textContent = pose + `\nFOV  H: ${fov.fovH.toFixed(1)}°  V: ${fov.fovV.toFixed(1)}°`;
+        }
         renderer.render(scene, camera);
         requestAnimationFrame(render);
       }
