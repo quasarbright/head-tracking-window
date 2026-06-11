@@ -1,4 +1,4 @@
-const OPENCV_URL = 'https://unpkg.com/@techstark/opencv-js@4.12.0-release.1/dist/opencv.js';
+const OPENCV_URL = 'js/opencv.js';
 let detector = null;
 
 function loadOpenCV(onReady, onStatus) {
