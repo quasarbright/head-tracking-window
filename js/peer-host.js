@@ -28,7 +28,6 @@ peer.on('open', id => {
 peer.on('connection', conn => {
   qrView.style.display = 'none';
   sceneView.classList.add('active');
-  document.getElementById('controls').classList.add('active');
   document.querySelectorAll('.marker-canvas').forEach(c => c.style.visibility = 'visible');
 
   conn.on('open', () => {
@@ -48,8 +47,7 @@ peer.on('connection', conn => {
 
   conn.on('close', () => {
     sceneView.classList.remove('active');
-    document.getElementById('controls').classList.remove('active');
-    document.querySelectorAll('.marker-canvas').forEach(c => c.style.visibility = 'hidden');
+document.querySelectorAll('.marker-canvas').forEach(c => c.style.visibility = 'hidden');
     qrView.style.display = 'flex';
     connStatus.textContent = 'Phone disconnected — rescan to reconnect';
   });

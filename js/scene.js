@@ -30,46 +30,34 @@ function updateCamera(camera, head, screenW, screenH, markerPx) {
   return { fovH, fovV };
 }
 
-async function loadSkyboxList() {
-  try {
-    const res = await fetch('skyboxes/manifest.json');
-    return await res.json();
-  } catch (e) {
-    console.warn('Could not load skybox manifest:', e);
-    return [];
-  }
-}
-
-function loadSkybox(scene, renderer, filename) {
-  const loader = new THREE.RGBELoader();
-  loader.setDataType(THREE.UnsignedByteType);
-  loader.load(`skyboxes/${filename}`, texture => {
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    scene.background = texture;
-  });
-}
-
-function buildSkyboxDropdown(scene, renderer, files) {
-  const sel = document.getElementById('skybox-select');
-  sel.innerHTML = '';
-  for (const f of files) {
-    const opt = document.createElement('option');
-    opt.value = f;
-    opt.textContent = f.replace(/\.(hdr|exr)$/i, '');
-    sel.appendChild(opt);
-  }
-  sel.onchange = () => loadSkybox(scene, renderer, sel.value);
-  if (files.length > 0) {
-    loadSkybox(scene, renderer, files[0]);
-  }
-}
-
 function buildScene() {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x111111);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-  const dir = new THREE.DirectionalLight(0xffffff, 1.0);
+  const grid = new THREE.GridHelper(60, 60, 0x444444, 0x444444);
+  grid.position.y = -4;
+  scene.add(grid);
+
+  const boxes = [
+    { pos: [ 0,  0,  -3], color: 0xff4444, size: [1.5, 1.5, 1.5] },
+    { pos: [ 4,  0,  -6], color: 0x44aaff, size: [2,   2,   2  ] },
+    { pos: [-4,  0,  -6], color: 0x44ff88, size: [2,   2,   2  ] },
+    { pos: [ 6,  0, -12], color: 0xffaa00, size: [3,   3,   3  ] },
+    { pos: [-6,  0, -12], color: 0xcc44ff, size: [3,   3,   3  ] },
+    { pos: [ 0,  0, -12], color: 0xffffff, size: [3,   7,   3  ] },
+  ];
+
+  for (const { pos, color, size } of boxes) {
+    const mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(...size),
+      new THREE.MeshLambertMaterial({ color })
+    );
+    mesh.position.set(...pos);
+    scene.add(mesh);
+  }
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.8);
   dir.position.set(5, 10, 5);
   scene.add(dir);
 
@@ -100,8 +88,6 @@ function initScene(container) {
   }
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
   container.appendChild(renderer.domElement);
 
   const camera = new THREE.PerspectiveCamera();
@@ -110,8 +96,6 @@ function initScene(container) {
   camera.matrixAutoUpdate = false;
 
   const scene = buildScene();
-
-  loadSkyboxList().then(files => buildSkyboxDropdown(scene, renderer, files));
 
   window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
