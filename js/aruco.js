@@ -12,7 +12,11 @@ function loadOpenCV(onReady, onStatus) {
   script.src = OPENCV_URL;
   script.async = true;
   script.onload = () => {
-    update('Initializing…');
+    update('Script loaded, initializing…');
+    if (typeof cv === 'undefined') {
+      update('ERROR: cv global not defined after load');
+      return;
+    }
     cv['onRuntimeInitialized'] = () => {
       try {
         const dictId = cv.aruco_DICT_4X4_50 !== undefined ? cv.aruco_DICT_4X4_50 : 0;
@@ -30,8 +34,16 @@ function loadOpenCV(onReady, onStatus) {
         update(`FAIL: ${e.message}`);
       }
     };
+    // Already initialized (some builds call onRuntimeInitialized synchronously)
+    if (cv.Mat) {
+      update('Already initialized, calling onRuntimeInitialized');
+      cv['onRuntimeInitialized']();
+    }
   };
-  script.onerror = () => update('Failed to load OpenCV.js');
+  script.onerror = (e) => {
+    update(`Failed to load: ${OPENCV_URL} — ${e.type} (check network tab)`);
+  };
+  update(`Fetching ${OPENCV_URL}…`);
   document.head.appendChild(script);
 }
 
